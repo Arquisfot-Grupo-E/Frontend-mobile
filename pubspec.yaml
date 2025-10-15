@@ -1,0 +1,22 @@
+name: appprueba
+description: A minimal BookWorm Flutter app scaffold created from provided source files.
+publish_to: 'none'
+version: 0.0.1
+environment:
+  sdk: '>=2.18.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.0.5
+  graphql_flutter: ^5.1.0
+  shared_preferences: ^2.1.1
+  go_router: ^16.2.4
+  intl: ^0.18.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
