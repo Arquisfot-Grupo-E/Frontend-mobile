@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/graphql_service.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -66,14 +68,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    // Registration succeeded. Try to log the user in to obtain tokens.
+    final loginRes = await client.mutate(
+      MutationOptions(
+        document: gql(GraphQLService.loginMutation),
+        variables: {
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text,
+        },
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (loginRes.hasException) {
+      // Tokens not available or login failed — still notify and navigate to preferences
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Cuenta creada! Inicia sesión manualmente'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.go('/preferences');
+      return;
+    }
+
+    final access = loginRes.data?['login']?['access'] as String?;
+    final refresh = loginRes.data?['login']?['refresh'] as String?;
+
+    if (access != null && refresh != null) {
+      // Save tokens in provider/storage
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      await auth.login(access, refresh);
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('¡Cuenta creada! Ahora inicia sesión'),
+        content: Text('¡Cuenta creada! Bienvenido'),
         backgroundColor: Colors.green,
       ),
     );
 
-    // After registering, open preferences selection
+    // Navigate to preferences selection
     context.go('/preferences');
   }
 

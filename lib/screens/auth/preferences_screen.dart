@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:go_router/go_router.dart';
 import '../../services/graphql_service.dart';
 
 class PreferencesScreen extends StatefulWidget {
@@ -86,8 +87,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       const SnackBar(content: Text('Preferencias guardadas')),
     );
 
-    // Navigate to search/home
-    Navigator.of(context).pushReplacementNamed('/search');
+    // Navigate to search/home using GoRouter
+    context.go('/search');
   }
 
   @override
