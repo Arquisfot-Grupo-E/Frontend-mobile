@@ -73,8 +73,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
 
-    // After registering, open preferences selection
-    context.go('/preferences');
+    context.go('/login');
   }
 
   @override

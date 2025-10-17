@@ -58,6 +58,7 @@ class GraphQLService {
       }
     }
   ''';
+
   static const String registerMutation = r'''
     mutation Register(
       $email: String!
@@ -77,25 +78,6 @@ class GraphQLService {
         email
         first_name
         last_name
-        # has_selected_preferences
-        # preferred_genres
-      }
-    }
-  ''';
-
-  static const String saveGenresMutation = r'''
-    mutation SaveGenres($genres: [String!]!) {
-      saveGenres(genres: $genres) {
-        user_id
-        saved_genres
-      }
-    }
-  ''';
-
-  static const String confirmPreferencesMutation = r'''
-    mutation ConfirmPreferences {
-      confirmPreferences {
-        detail
       }
     }
   ''';
