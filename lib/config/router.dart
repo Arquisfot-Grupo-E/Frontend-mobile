@@ -4,6 +4,7 @@ import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/books/search_screen.dart';
 import '../screens/books/book_detail_screen.dart';
+import '../screens/auth/preferences_screen.dart';
 
 class AppRouter {
   static final router = GoRouter(
@@ -20,6 +21,10 @@ class AppRouter {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/preferences',
+        builder: (context, state) => const PreferencesScreen(),
       ),
       GoRoute(
         path: '/search',
