@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/graphql_service.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -17,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final _descriptionController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -28,6 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _confirmPasswordController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -45,6 +49,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'password': _passwordController.text,
           'firstName': _firstNameController.text.trim(),
           'lastName': _lastNameController.text.trim(),
+          'description': _descriptionController.text.trim(),
         },
       ),
     );
@@ -63,14 +68,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    // Registration succeeded. Try to log the user in to obtain tokens.
+    final loginRes = await client.mutate(
+      MutationOptions(
+        document: gql(GraphQLService.loginMutation),
+        variables: {
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text,
+        },
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (loginRes.hasException) {
+      // Tokens not available or login failed — still notify and navigate to preferences
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Cuenta creada! Inicia sesión manualmente'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.go('/preferences');
+      return;
+    }
+
+    final access = loginRes.data?['login']?['access'] as String?;
+    final refresh = loginRes.data?['login']?['refresh'] as String?;
+
+    if (access != null && refresh != null) {
+      // Save tokens in provider/storage
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      await auth.login(access, refresh);
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('¡Cuenta creada! Ahora inicia sesión'),
+        content: Text('¡Cuenta creada! Bienvenido'),
         backgroundColor: Colors.green,
       ),
     );
 
-    context.go('/login');
+    // Navigate to preferences selection
+    context.go('/preferences');
   }
 
   @override
@@ -220,6 +260,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     }
                     return null;
                   },
+                ),
+                const SizedBox(height: 16),
+
+                // Description (optional)
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Descripción (opcional)',
+                    prefixIcon: Icon(Icons.info_outline),
+                  ),
+                  maxLines: 3,
                 ),
                 const SizedBox(height: 32),
             // Register Button
