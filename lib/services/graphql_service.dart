@@ -65,12 +65,14 @@ class GraphQLService {
       $password: String!
       $firstName: String!
       $lastName: String!
+      $description: String
     ) {
       register(
         email: $email
         password: $password
         firstName: $firstName
         lastName: $lastName
+        description: $description
       ) {
         id
         email

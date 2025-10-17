@@ -17,6 +17,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final _descriptionController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -28,6 +29,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _confirmPasswordController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -45,6 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'password': _passwordController.text,
           'firstName': _firstNameController.text.trim(),
           'lastName': _lastNameController.text.trim(),
+          'description': _descriptionController.text.trim(),
         },
       ),
     );
@@ -220,6 +223,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     }
                     return null;
                   },
+                ),
+                const SizedBox(height: 16),
+
+                // Description (optional)
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Descripción (opcional)',
+                    prefixIcon: Icon(Icons.info_outline),
+                  ),
+                  maxLines: 3,
                 ),
                 const SizedBox(height: 32),
             // Register Button
