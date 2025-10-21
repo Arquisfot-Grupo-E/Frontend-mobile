@@ -1,0 +1,18 @@
+services:
+  flutter-builder:
+    build: .
+    container_name: flutter_mobile_builder
+    volumes:
+      - .:/app
+      - flutter_pub_cache:/root/.pub-cache
+    networks:
+      - bookworm_network
+    # The built APK will be in build/app/outputs/flutter-apk/
+
+volumes:
+  flutter_pub_cache:
+
+networks:
+  bookworm_network:
+    external: true
+    name: bookworm_network
