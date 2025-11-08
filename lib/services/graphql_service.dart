@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 class GraphQLService {
-  static const String _url = 'http://10.0.2.2:4000/graphql'; // Para emulador Android
+  static const String _url = 'http://10.0.2.2:8008/graphql'; // Para emulador Android
   // Para dispositivo físico usa tu IP local: 'http://192.168.x.x:4000/graphql'
 
   static ValueNotifier<GraphQLClient> client(String? token) {
