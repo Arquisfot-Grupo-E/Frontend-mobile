@@ -5,25 +5,65 @@ services:
     volumes:
       - .:/app
       - flutter_pub_cache:/root/.pub-cache
-    # No necesita redes - solo compila el APK
+    # No necesita redes - solo compila el APK y genera archivos estáticos
 
-  # Nginx con HTTPS para app móvil
+  # Nginx con HTTPS para API móvil
+  # Actúa como proxy inverso hacia el GraphQL Gateway
   nginx:
     image: nginx:latest
     container_name: bookworm_nginx_mobile
     ports:
       - "8008:80"    # HTTP (redirige a HTTPS)
-      - "8443:443"   # HTTPS para la app móvil
+      - "8443:443"   # HTTPS para la app móvil (puerto diferente al web)
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro  # Montar certificados SSL
+      - ./ssl:/etc/nginx/ssl:ro  # Certificados SSL propios del mobile
     networks:
-      - bookworm_network
+      - dmz_network  # Misma red que el gateway para comunicación interna
+    depends_on:
+      - gateway
+
+  # Gateway GraphQL compartido (opcional - solo para desarrollo independiente)
+  gateway:
+    profiles:
+      - gateway  # Solo se levanta si usas: docker-compose --profile gateway up
+    build:
+      context: ../Middleware-Graphql
+    container_name: graphql_gateway
+    expose:
+      - "4000"  # Solo exponer dentro de Docker
+    environment:
+      # URLs de los microservicios
+      USERS_SERVICE_URL: http://back-users:8001
+      REVIEWS_SERVICE_URL: http://back-reviews:8000
+      RECOMMENDATIONS_SERVICE_URL: http://back-recommendations:8002
+      SCRAPING_SERVICE_URL: http://back-scraping:8080
+    networks:
+      - dmz_network      # Interfaz pública: recibe de Nginx móvil
+      - backend_network  # Interfaz privada: comunica con microservicios
 
 volumes:
   flutter_pub_cache:
 
+# =============================================================================
+# REDES SEGMENTADAS - FRONTEND MOBILE
+# =============================================================================
+# Arquitectura de red para aplicación móvil:
+#   - dmz_network: Nginx móvil (puerto 8443) + GraphQL Gateway
+#   - backend_network: Gateway hacia microservicios
+#
+# DIFERENCIAS CON WEB:
+#   - Puerto HTTPS: 8443 (en lugar de 443)
+#   - CORS habilitado para Flutter
+#   - Solo endpoint /graphql (no frontend estático)
+#
+# PREREQUISITO: Ejecutar bash scripts/setup-networks.sh (en Middleware-Graphql)
+# =============================================================================
 networks:
-  bookworm_network:
+  dmz_network:
     external: true
-    name: bookworm_network
+    name: dmz_network
+  
+  backend_network:
+    external: true
+    name: backend_network
