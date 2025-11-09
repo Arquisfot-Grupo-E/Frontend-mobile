@@ -5,8 +5,7 @@ services:
     volumes:
       - .:/app
       - flutter_pub_cache:/root/.pub-cache
-    networks:
-      - bookworm_network
+    # No necesita redes - solo compila el APK
 
   # Nginx con HTTPS para app móvil
   nginx:
