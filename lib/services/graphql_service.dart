@@ -1,11 +1,16 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 class GraphQLService {
-  static const String _url = 'http://10.0.2.2:8008/graphql'; // Para emulador Android
-  // Para dispositivo físico usa tu IP local: 'http://192.168.x.x:4000/graphql'
+  // HTTPS con certificado autofirmado
+  static const String _url = 'https://10.0.2.2:8443/graphql'; // Para emulador Android
+  // Para dispositivo físico usa: 'https://192.168.x.x:8443/graphql'
 
   static ValueNotifier<GraphQLClient> client(String? token) {
+    // ⚠️ SOLO PARA DESARROLLO: Permitir certificados autofirmados
+    HttpOverrides.global = _DevHttpOverrides();
+
     final HttpLink httpLink = HttpLink(_url);
 
     final AuthLink authLink = AuthLink(
@@ -58,6 +63,7 @@ class GraphQLService {
       }
     }
   ''';
+
   static const String registerMutation = r'''
     mutation Register(
       $email: String!
@@ -77,8 +83,6 @@ class GraphQLService {
         email
         first_name
         last_name
-        # has_selected_preferences
-        # preferred_genres
       }
     }
   ''';
@@ -99,4 +103,20 @@ class GraphQLService {
       }
     }
   ''';
+}
+
+// ⚠️ SOLO PARA DESARROLLO: Clase para permitir certificados autofirmados
+class _DevHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) {
+        // En producción, NUNCA retornar true aquí
+        // Esto acepta CUALQUIER certificado, incluso inválidos
+        if (kDebugMode) {
+          print('⚠️ WARNING: Accepting self-signed certificate for $host:$port');
+        }
+        return true; // Aceptar certificados autofirmados
+      };
+  }
 }
