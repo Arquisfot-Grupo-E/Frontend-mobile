@@ -5,28 +5,19 @@ services:
     volumes:
       - .:/app
       - flutter_pub_cache:/root/.pub-cache
-    networks:
-      - bookworm_network
-    # The built APK will be in build/app/outputs/flutter-apk/
+    # No necesita redes - solo compila el APK
 
   #Inclusion de nginx
   nginx:
     image: nginx:latest
     container_name: bookworm_nginx_mobile
-    expose:
-      - "80"
+    ports:
+      - "8081:80"  # Exponer si quieres servir la web version
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - flutter-builder
-    networks:
-      - bookworm_network
 
 
 volumes:
   flutter_pub_cache:
-
-networks:
-  bookworm_network:
-    external: true
-    name: bookworm_network
